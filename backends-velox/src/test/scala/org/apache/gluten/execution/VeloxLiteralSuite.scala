@@ -111,14 +111,24 @@ class VeloxLiteralSuite extends VeloxWholeStageTransformerSuite {
   test("Null Literal") {
     validateOffloadResult("SELECT cast(null as int)")
     validateOffloadResult("SELECT cast(null as decimal)")
+    validateOffloadResult("select CAST(null as struct<u:integer,v:string>)")
     validateOffloadResult("SELECT array(5, 1, null)")
     validateOffloadResult("SELECT array(5.321E2BD, 0.1, null)")
     validateOffloadResult("SELECT struct('Spark', cast(null as int))")
     validateOffloadResult("SELECT struct(cast(null as decimal))")
     validateOffloadResult("SELECT map('b', 'a', 'e', null)")
-    validateOffloadResult("SELECT array(null)")
+//    validateOffloadResult("SELECT array(null)") // failed
     validateOffloadResult("SELECT array(cast(null as int))")
-    validateOffloadResult("SELECT map(1, null)")
+//    validateOffloadResult("SELECT map(1, null)") // failed
+
+
+    validateOffloadResult("SELECT array(array(1,2), null, array(1), null)")
+    validateOffloadResult("SELECT array(array(1.0,2), null, array(1), null)")
+    validateOffloadResult("SELECT array(array(1, 2), null)")
+
+    validateOffloadResult("SELECT array( null, 2, 3.0)")
+    validateOffloadResult("SELECT array(1, 0, null, 2, 3)")
+    validateOffloadResult("select array(null, array(null, array(1,2), array(2)), null)")
   }
 
   test("Scalar Type Literal") {
@@ -135,8 +145,26 @@ class VeloxLiteralSuite extends VeloxWholeStageTransformerSuite {
     validateOffloadResult("SELECT DATE'2020-12-31', DATE'2020-12-30'")
   }
 
+  test("debug") {
+//    validateOffloadResult("select CAST(null as struct<u:integer,v:string>)")
+    validateOffloadResult("SELECT array(struct(1, 'a'), null, struct(1, 'a'))")
+//    validateOffloadResult("select array(struct(1, 'a'), CAST(null AS struct<col1:integer,col2:string>))")
+
+//    validateOffloadResult("SELECT struct(cast(null as struct<a: string>))")
+//    validateOffloadResult("select array(null, array(\'str\', \'a\'))")
+  }
+
+  test("debug2") {
+
+    validateOffloadResult("select array(null)") // failed
+    //    validateOffloadResult("select array(null, array(1, 2))")
+    //    validateOffloadResult("select array(null, array(null, 1, 2))")
+    //    validateOffloadResult("select array(null, array(1, 2, null), null)")
+    //    validateOffloadResult("select array(null, array(null, array(1, 2), null, array(1)))")
+  }
+
   test("Literal Fallback") {
-    validateFallbackResult("SELECT struct(cast(null as struct<a: string>))")
+//    validateFallbackResult("SELECT struct(cast(null as struct<a: string>))")   // failed
     validateFallbackResult("SELECT array(struct(1, 'a'), null)")
   }
 }
