@@ -16,7 +16,7 @@
 
 set -exu
 
-VELOX_REPO=https://github.com/oap-project/velox.git
+VELOX_REPO=git@github.com:vectorijk/velox-oap-project.git
 VELOX_BRANCH=2025_06_28
 VELOX_HOME=""
 RUN_SETUP_SCRIPT=ON
@@ -169,7 +169,7 @@ TARGET_BUILD_COMMIT="$(git ls-remote $VELOX_REPO $VELOX_BRANCH | awk '{print $1;
 if [ -d $VELOX_SOURCE_DIR ]; then
   echo "Velox source folder $VELOX_SOURCE_DIR already exists..."
   cd $VELOX_SOURCE_DIR
-  # if velox_branch exists, check it out, 
+  # if velox_branch exists, check it out,
   # otherwise assume that user prepared velox source in velox_home, skip checkout
   if [ -n "$TARGET_BUILD_COMMIT" ]; then
     git init .

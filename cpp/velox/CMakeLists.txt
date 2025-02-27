@@ -47,9 +47,11 @@ elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL arm64)
   set(SYSTEM_LIB_MULTIARCH_PATH
       "/usr/lib"
       CACHE PATH "System Lib MultiArch dir")
+  message(STATUS "debug11: # ${SYSTEM_LIB_MULTIARCH_PATH}")
 else()
   message(FATAL_ERROR "Unsupported processor type: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
+message(STATUS "debug11: # ${SYSTEM_LIB_MULTIARCH_PATH}")
 
 if(NOT DEFINED VELOX_HOME)
   set(VELOX_HOME ${GLUTEN_HOME}/ep/build-velox/build/velox_ep)
@@ -125,6 +127,16 @@ macro(find_azure)
   find_package(azure-identity-cpp CONFIG REQUIRED)
 endmacro()
 
+set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
+set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
+set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
+message(STATUS "Protobuf Include: ${Protobuf_INCLUDE_DIRS}")
+message(STATUS "Protobuf Libraries: ${Protobuf_LIBRARIES}")
+message(STATUS "Protobuf Library: ${PROTOBUF_LIBRARY}")
+
 # Build Velox backend.
 set(VELOX_SRCS
     compute/VeloxBackend.cc
@@ -185,6 +197,7 @@ if(ENABLE_GLUTEN_VCPKG AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
     velox PRIVATE -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/symbols.map)
 endif()
 
+message(STATUS "TEST DEBUG 2: ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS} ${VELOX_BUILD_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME}")
 target_include_directories(
   velox PUBLIC ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS}
                ${VELOX_BUILD_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME})
@@ -290,6 +303,7 @@ else()
 endif()
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_BCK})
+message(STATUS "debug12: # ${CMAKE_FIND_LIBRARY_SUFFIXES}")
 
 # Adopted from Velox's CMakeLists.txt.
 # https://github.com/facebookincubator/velox/pull/11410
@@ -362,6 +376,10 @@ if(ENABLE_GPU)
   target_link_libraries(velox
                         PRIVATE ${VELOX_BUILD_PATH}/_deps/cudf-build/libcudf.so)
 endif()
+
+
+message(STATUS "TEST DEBUG 3: ${CXX_INCLUDES}")
+#set(CXX_INCLUDES "/path/to/includes")
 
 add_custom_command(
   TARGET velox

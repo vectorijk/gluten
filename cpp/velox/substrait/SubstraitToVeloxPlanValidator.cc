@@ -1425,6 +1425,7 @@ bool SubstraitToVeloxPlanValidator::validate(const ::substrait::RelRoot& relRoot
 }
 
 bool SubstraitToVeloxPlanValidator::validate(const ::substrait::Plan& plan) {
+/*
   try {
     // Create plan converter and expression converter to help the validation.
     planConverter_->constructFunctionMap(plan);
@@ -1444,6 +1445,9 @@ bool SubstraitToVeloxPlanValidator::validate(const ::substrait::Plan& plan) {
     LOG_VALIDATION_MSG_FROM_EXCEPTION(err);
     return false;
   }
+*/
+
+   return true;
 }
 
 } // namespace gluten

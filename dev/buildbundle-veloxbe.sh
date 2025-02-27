@@ -16,7 +16,7 @@
 # limitations under the License.
 
 BASEDIR=$(dirname $0)
-source "$BASEDIR/builddeps-veloxbe.sh"
+#source "$BASEDIR/builddeps-veloxbe.sh"
 
 function build_for_spark {
   spark_version=$1
