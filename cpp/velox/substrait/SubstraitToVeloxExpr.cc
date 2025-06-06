@@ -93,9 +93,8 @@ RowVectorPtr makeEmptyRowVector(memory::MemoryPool* pool) {
 
 RowVectorPtr makeNullRowVector(memory::MemoryPool* pool) {
     const std::vector<VectorPtr>& children = {
-    VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(constructFlatVectorForStruct, ::facebook::velox::TypeKind::INTEGER, child, 1, veloxType, pool),
-    VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(constructFlatVectorForStruct, ::facebook::velox::TypeKind::VARCHAR, child, 1, veloxType, pool)
-
+//    VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(constructFlatVectorForStruct, ::facebook::velox::TypeKind::INTEGER, child, 1, veloxType, pool),
+//    VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(constructFlatVectorForStruct, ::facebook::velox::TypeKind::VARCHAR, child, 1, veloxType, pool)
     };
     std::vector<std::string>&& names = {"col1", "col2"};
     std::vector<std::shared_ptr<const Type>> types;
