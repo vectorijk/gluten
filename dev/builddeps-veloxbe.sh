@@ -234,8 +234,8 @@ function build_velox {
 function build_gluten_cpp {
   echo "Start to build Gluten CPP"
   cd $GLUTEN_DIR/cpp
-#  rm -rf build
-#  mkdir build
+  rm -rf build
+  mkdir build
   cd build
 
   GLUTEN_CMAKE_OPTIONS="-DBUILD_VELOX_BACKEND=ON \
@@ -263,9 +263,9 @@ function build_gluten_cpp {
 }
 
 function build_velox_backend {
-  if [ $BUILD_ARROW == "ON" ]; then
-    build_arrow
-  fi
+#  if [ $BUILD_ARROW == "ON" ]; then
+#    build_arrow
+#  fi
 #  build_velox
   build_gluten_cpp
 }

@@ -157,7 +157,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KNOWN_WARNINGS}")
 execute_process(
   COMMAND
     bash -c
-    "( source ${VELOX_HOME}/scripts/setup-helper-functions.sh && echo -n $(get_cxx_flags $ENV{CPU_TARGET}))"
+    "( source /home/user/gluten/ep/build-velox/build/velox_ep/scripts/setup-helper-functions.sh && echo -n $(get_cxx_flags $ENV{CPU_TARGET}))"
   OUTPUT_VARIABLE SCRIPT_CXX_FLAGS
   RESULT_VARIABLE COMMAND_STATUS)
 if(COMMAND_STATUS EQUAL "1")
@@ -183,16 +183,16 @@ set(JAVA_AWT_LIBRARY "$ENV{JAVA_HOME}/jre/lib/libjawt.dylib")
 set(JAVA_JVM_LIBRARY "$ENV{JAVA_HOME}/jre/lib/server/libjvm.dylib")
 
 set(JAVA_INCLUDE_PATH "$ENV{JAVA_HOME}/include")
-set(JAVA_INCLUDE_PATH2 "$ENV{JAVA_HOME}/include/darwin")
+set(JAVA_INCLUDE_PATH2 "$ENV{JAVA_HOME}/include/linux")
 set(JAVA_AWT_INCLUDE_PATH "$ENV{JAVA_HOME}/include")
 
 
-set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
-set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
-set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
+#set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+#set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+#set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+#set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
+#set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
+#set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
 find_package(JNI REQUIRED)
 
 find_package(glog REQUIRED)
