@@ -53,10 +53,14 @@ else()
 endif()
 message(STATUS "debug11: # ${SYSTEM_LIB_MULTIARCH_PATH}")
 
+message(STATUS "Before Set VELOX_HOME to ${VELOX_HOME}")
 if(NOT DEFINED VELOX_HOME)
   set(VELOX_HOME ${GLUTEN_HOME}/ep/build-velox/build/velox_ep)
   message(STATUS "Set VELOX_HOME to ${VELOX_HOME}")
 endif()
+
+set(VELOX_HOME /home/user/gluten/ep/build-velox/build/velox_ep)
+message(STATUS "Manual Set VELOX_HOME to ${VELOX_HOME}")
 
 message("Velox module final CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 
@@ -127,15 +131,6 @@ macro(find_azure)
   find_package(azure-identity-cpp CONFIG REQUIRED)
 endmacro()
 
-set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
-set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
-set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
-message(STATUS "Protobuf Include: ${Protobuf_INCLUDE_DIRS}")
-message(STATUS "Protobuf Libraries: ${Protobuf_LIBRARIES}")
-message(STATUS "Protobuf Library: ${PROTOBUF_LIBRARY}")
 
 # Build Velox backend.
 set(VELOX_SRCS
@@ -200,10 +195,10 @@ endif()
 message(STATUS "TEST DEBUG 2: ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS} ${VELOX_BUILD_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME}")
 target_include_directories(
   velox PUBLIC ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS}
-               ${VELOX_BUILD_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME})
+               /home/user/gluten/ep/build-velox/build/velox_ep/_build/release ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME})
 
 if(BUILD_TESTS)
-  target_include_directories(velox PUBLIC ${VELOX_BUILD_PATH})
+  target_include_directories(velox PUBLIC /home/user/gluten/ep/build-velox/build/velox_ep/_build/release)
 endif()
 
 set_target_properties(velox PROPERTIES LIBRARY_OUTPUT_DIRECTORY
@@ -227,32 +222,34 @@ endif()
 
 target_link_libraries(velox PUBLIC gluten)
 
+set(VELOX_BUILD_PATH, "/home/user/gluten/ep/build-velox/build/velox_ep/_build/release")
+
 # Requires VELOX_MONO_LIBRARY=ON when building Velox.
-import_library(facebook::velox ${VELOX_BUILD_PATH}/lib/libvelox.a)
+import_library(facebook::velox /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/lib/libvelox.a)
 
 if(BUILD_TESTS)
   add_duckdb()
 
   import_library(facebook::velox::dbgen
-                 ${VELOX_BUILD_PATH}/velox/tpch/gen/dbgen/libdbgen.a)
+                 /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/velox/tpch/gen/dbgen/libdbgen.a)
   target_link_libraries(facebook::velox INTERFACE facebook::velox::dbgen)
 
   import_library(
     facebook::velox::vector_test_lib
-    ${VELOX_BUILD_PATH}/velox/vector/tests/utils/libvelox_vector_test_lib.a)
+    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/velox/vector/tests/utils/libvelox_vector_test_lib.a)
   import_library(
     facebook::velox::dwio_common_test
-    ${VELOX_BUILD_PATH}/velox/dwio/common/tests/utils/libvelox_dwio_common_test_utils.a
+    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/velox/dwio/common/tests/utils/libvelox_dwio_common_test_utils.a
   )
   import_library(
     facebook::velox::file_test_utils
-    ${VELOX_BUILD_PATH}/velox/common/file/tests/libvelox_file_test_utils.a)
+    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/velox/common/file/tests/libvelox_file_test_utils.a)
   import_library(
     facebook::velox::temp_path
-    ${VELOX_BUILD_PATH}/velox/exec/tests/utils/libvelox_temp_path.a)
+    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/velox/exec/tests/utils/libvelox_temp_path.a)
   import_library(
     facebook::velox::exec_test_lib
-    ${VELOX_BUILD_PATH}/velox/exec/tests/utils/libvelox_exec_test_lib.a)
+    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/velox/exec/tests/utils/libvelox_exec_test_lib.a)
   target_link_libraries(
     facebook::velox::exec_test_lib
     INTERFACE facebook::velox::vector_test_lib
@@ -280,7 +277,7 @@ if(STEMMER_LIB)
 else()
   import_library(
     external::stemmer
-    ${VELOX_BUILD_PATH}/_deps/libstemmer/src/libstemmer/libstemmer.a)
+    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/libstemmer/src/libstemmer/libstemmer.a)
 endif()
 target_link_libraries(velox PUBLIC external::stemmer)
 
@@ -289,7 +286,7 @@ if(simdjson_FOUND AND TARGET simdjson::simdjson)
   target_link_libraries(velox PUBLIC simdjson::simdjson)
 else()
   import_library(external::simdjson
-                 ${VELOX_BUILD_PATH}/_deps/simdjson-build/libsimdjson.a)
+                 /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/simdjson-build/libsimdjson.a)
   target_link_libraries(velox PUBLIC external::simdjson)
 endif()
 

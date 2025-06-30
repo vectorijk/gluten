@@ -54,7 +54,8 @@ function build_arrow_cpp() {
        -DCMAKE_INSTALL_PREFIX=/usr/local \
        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
        -DARROW_BUILD_SHARED=OFF \
-       -DARROW_BUILD_STATIC=ON
+       -DARROW_BUILD_STATIC=ON \
+       -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
  # Install thrift.
  cd _build/thrift_ep-prefix/src/thrift_ep-build

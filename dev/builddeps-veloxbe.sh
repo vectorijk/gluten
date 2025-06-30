@@ -195,67 +195,67 @@ function build_velox {
 function build_gluten_cpp {
   echo "Start to build Gluten CPP"
   cd $GLUTEN_DIR/cpp
-#  rm -rf build
-#  mkdir build
+  rm -rf build
+  mkdir build
   cd build
-#  cmake -DBUILD_VELOX_BACKEND=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-#        -DVELOX_HOME=${VELOX_HOME} \
-#        -DBUILD_TESTS=$BUILD_TESTS -DBUILD_EXAMPLES=$BUILD_EXAMPLES -DBUILD_BENCHMARKS=$BUILD_BENCHMARKS -DENABLE_JEMALLOC_STATS=$ENABLE_JEMALLOC_STATS \
-#        -DENABLE_HBM=$ENABLE_HBM -DENABLE_QAT=$ENABLE_QAT -DENABLE_IAA=$ENABLE_IAA -DENABLE_GCS=$ENABLE_GCS \
-#        -DENABLE_S3=$ENABLE_S3 -DENABLE_HDFS=$ENABLE_HDFS -DENABLE_ABFS=$ENABLE_ABFS ..
-  make -j $NUM_THREADS
+  cmake -DBUILD_VELOX_BACKEND=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+        -DVELOX_HOME=${VELOX_HOME} \
+        -DBUILD_TESTS=$BUILD_TESTS -DBUILD_EXAMPLES=$BUILD_EXAMPLES -DBUILD_BENCHMARKS=$BUILD_BENCHMARKS -DENABLE_JEMALLOC_STATS=$ENABLE_JEMALLOC_STATS \
+        -DENABLE_HBM=$ENABLE_HBM -DENABLE_QAT=$ENABLE_QAT -DENABLE_IAA=$ENABLE_IAA -DENABLE_GCS=$ENABLE_GCS \
+        -DENABLE_S3=$ENABLE_S3 -DENABLE_HDFS=$ENABLE_HDFS -DENABLE_ABFS=$ENABLE_ABFS ..
+  make -j 8
 }
 
 function build_velox_backend {
-  if [ $BUILD_ARROW == "ON" ]; then
-    build_arrow
-  fi
+#  if [ $BUILD_ARROW == "ON" ]; then
+#    build_arrow
+#  fi
 #  build_velox
   build_gluten_cpp
 }
 
-(
-  cd $GLUTEN_DIR/ep/build-velox/src
-  ./get_velox.sh $VELOX_PARAMETER
-)
-
-if [ "$VELOX_HOME" == "" ]; then
-  VELOX_HOME="$GLUTEN_DIR/ep/build-velox/build/velox_ep"
-fi
-
-OS=`uname -s`
-ARCH=`uname -m`
-DEPENDENCY_DIR=${DEPENDENCY_DIR:-$CURRENT_DIR/../ep/_ep}
-mkdir -p ${DEPENDENCY_DIR}
-
-source $GLUTEN_DIR/dev/build_helper_functions.sh
-if [ -z "${GLUTEN_VCPKG_ENABLED:-}" ] && [ $RUN_SETUP_SCRIPT == "ON" ]; then
-  echo "Start to install dependencies"
-  pushd $VELOX_HOME
-  if [ $OS == 'Linux' ]; then
-    setup_linux
-  elif [ $OS == 'Darwin' ]; then
-    setup_macos
-  else
-    echo "Unsupported kernel: $OS"
-    exit 1
-  fi
-  if [ $ENABLE_S3 == "ON" ]; then
-    if [ $OS == 'Darwin' ]; then
-      echo "S3 is not supported on MacOS."
-      exit 1
-    fi
-    ${VELOX_HOME}/scripts/setup-adapters.sh aws
-  fi
-  if [ $ENABLE_GCS == "ON" ]; then
-    ${VELOX_HOME}/scripts/setup-adapters.sh gcs
-  fi
-  if [ $ENABLE_ABFS == "ON" ]; then
-    export AZURE_SDK_DISABLE_AUTO_VCPKG=ON
-    ${VELOX_HOME}/scripts/setup-adapters.sh abfs
-  fi
-  popd
-fi
+#(
+#  cd $GLUTEN_DIR/ep/build-velox/src
+#  ./get_velox.sh $VELOX_PARAMETER
+#)
+#
+#if [ "$VELOX_HOME" == "" ]; then
+#  VELOX_HOME="$GLUTEN_DIR/ep/build-velox/build/velox_ep"
+#fi
+#
+#OS=`uname -s`
+#ARCH=`uname -m`
+#DEPENDENCY_DIR=${DEPENDENCY_DIR:-$CURRENT_DIR/../ep/_ep}
+#mkdir -p ${DEPENDENCY_DIR}
+#
+#source $GLUTEN_DIR/dev/build_helper_functions.sh
+#if [ -z "${GLUTEN_VCPKG_ENABLED:-}" ] && [ $RUN_SETUP_SCRIPT == "ON" ]; then
+#  echo "Start to install dependencies"
+#  pushd $VELOX_HOME
+#  if [ $OS == 'Linux' ]; then
+#    setup_linux
+#  elif [ $OS == 'Darwin' ]; then
+#    setup_macos
+#  else
+#    echo "Unsupported kernel: $OS"
+#    exit 1
+#  fi
+#  if [ $ENABLE_S3 == "ON" ]; then
+#    if [ $OS == 'Darwin' ]; then
+#      echo "S3 is not supported on MacOS."
+#      exit 1
+#    fi
+#    ${VELOX_HOME}/scripts/setup-adapters.sh aws
+#  fi
+#  if [ $ENABLE_GCS == "ON" ]; then
+#    ${VELOX_HOME}/scripts/setup-adapters.sh gcs
+#  fi
+#  if [ $ENABLE_ABFS == "ON" ]; then
+#    export AZURE_SDK_DISABLE_AUTO_VCPKG=ON
+#    ${VELOX_HOME}/scripts/setup-adapters.sh abfs
+#  fi
+#  popd
+#fi
 
 commands_to_run=${OTHER_ARGUMENTS:-}
 (
