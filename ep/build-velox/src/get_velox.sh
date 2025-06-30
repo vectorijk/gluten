@@ -17,7 +17,7 @@
 set -exu
 
 VELOX_REPO=git@github.com:vectorijk/velox-oap-project.git
-VELOX_BRANCH=2025_06_28
+VELOX_BRANCH=2025_06_14
 VELOX_HOME=""
 RUN_SETUP_SCRIPT=ON
 VELOX_ENHANCED_REPO=https://github.com/oap-project/velox.git

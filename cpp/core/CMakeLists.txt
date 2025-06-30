@@ -49,12 +49,12 @@ if(CCACHE_FOUND)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 
-set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
-set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
-set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
+#set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+#set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+#set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
+#set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
+#set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
+#set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
 
 macro(find_protobuf)
   set(CMAKE_FIND_LIBRARY_SUFFIXES_BCK ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -229,8 +229,8 @@ message(STATUS "Found Protobuf: ${PROTOBUF_LIBRARY}")
 message(STATUS "Found Protobuf: ${Protobuf_PROTOC_EXECUTABLE}")
 target_link_libraries(gluten LINK_PUBLIC ${PROTOBUF_LIBRARY})
 
-find_package(absl REQUIRED)
-target_link_libraries(gluten PRIVATE absl::base absl::strings absl::status absl::log)
+#find_package(absl REQUIRED)
+#target_link_libraries(gluten PRIVATE absl::base absl::strings absl::status absl::log)
 
 add_custom_command(
   OUTPUT ${SUBSTRAIT_PROTO_OUTPUT_FILES}
@@ -250,7 +250,7 @@ add_custom_command(
 
 add_custom_target(jni_proto ALL DEPENDS ${SUBSTRAIT_PROTO_OUTPUT_FILES}
                                         ${GLUTEN_PROTO_OUTPUT_FILES})
-#add_dependencies(jni_proto protobuf::libprotobuf)
+add_dependencies(jni_proto protobuf::libprotobuf)
 
 target_include_directories(
   gluten
