@@ -207,6 +207,10 @@ set_target_properties(velox PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 # If folly is not installed in system lib paths, please add
 # `-DCMAKE_PREFIX_PATH="${folly lib path}" to cmake arguments. It is also
 # applicable to other dependencies.
+set(Folly_DIR /home/user/gluten-deps/lib/cmake/folly/)
+set(FOLLY_INCLUDE_DIRS /home/user/gluten-deps/include/folly)
+set(fmt_DIR /home/user/gluten-deps/lib/cmake/fmt)
+
 find_package(Folly REQUIRED CONFIG)
 
 if(ENABLE_JEMALLOC_STATS)
@@ -262,6 +266,8 @@ target_link_libraries(velox PUBLIC facebook::velox)
 
 target_link_libraries(velox PUBLIC Folly::folly)
 
+set(re2_DIR /home/user/gluten/ep/_ep/arrow_ep/cpp-jni/re2_ep-install/lib/cmake/re2)
+
 find_re2()
 target_link_libraries(velox PUBLIC ${RE2_LIBRARY})
 
@@ -277,7 +283,7 @@ if(STEMMER_LIB)
 else()
   import_library(
     external::stemmer
-    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/libstemmer/src/libstemmer/libstemmer.a)
+    /home/user/gluten-deps/lib/libstemmer.a)
 endif()
 target_link_libraries(velox PUBLIC external::stemmer)
 
@@ -286,7 +292,7 @@ if(geos_FOUND AND TARGET GEOS::geos)
   add_library(external::geos ALIAS GEOS::geos)
 else()
   message(STATUS "import Velox bundled geos")
-  import_library(external::geos ${VELOX_BUILD_PATH}/lib/libgeos.a)
+  import_library(external::geos /home/user/gluten-deps/lib/libgeos.so)
 endif()
 target_link_libraries(velox PUBLIC external::geos)
 
@@ -295,7 +301,7 @@ if(simdjson_FOUND AND TARGET simdjson::simdjson)
   target_link_libraries(velox PUBLIC simdjson::simdjson)
 else()
   import_library(external::simdjson
-                 /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/simdjson-build/libsimdjson.a)
+                 /home/user/gluten-deps/lib/libsimdjson.a)
   target_link_libraries(velox PUBLIC external::simdjson)
 endif()
 
@@ -374,6 +380,9 @@ if(ENABLE_GPU)
                         PRIVATE ${VELOX_BUILD_PATH}/_deps/cudf-build/libcudf.so)
 endif()
 
+include_directories(/usr/local/include)
+link_directories(/usr/local/lib)
+target_link_libraries(velox PUBLIC /usr/local/lib/libglog.so)
 
 message(STATUS "TEST DEBUG 3: ${CXX_INCLUDES}")
 #set(CXX_INCLUDES "/path/to/includes")

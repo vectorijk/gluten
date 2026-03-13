@@ -12,7 +12,6 @@
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ep/build-arrow/build/arrow_ep" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ep/build-velox/build/velox_ep" vcs="Git" />
   </component>
 </project>
