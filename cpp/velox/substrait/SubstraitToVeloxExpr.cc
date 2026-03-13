@@ -91,23 +91,15 @@ RowVectorPtr makeEmptyRowVector(memory::MemoryPool* pool) {
   return makeRowVector({}, {}, 0, pool);
 }
 
-RowVectorPtr makeNullRowVector(memory::MemoryPool* pool) {
-    const std::vector<VectorPtr>& children = {
-//    VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(constructFlatVectorForStruct, ::facebook::velox::TypeKind::INTEGER, child, 1, veloxType, pool),
-//    VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(constructFlatVectorForStruct, ::facebook::velox::TypeKind::VARCHAR, child, 1, veloxType, pool)
-    };
-    std::vector<std::string>&& names = {"col1", "col2"};
-    std::vector<std::shared_ptr<const Type>> types;
-    size_t length = 1;
-    types.resize(children.size());
-      for (int i = 0; i < children.size(); i++) {
-        types[i] = children[i]->type();
-      }
-  auto rowType = ROW(std::move(names), std::move(types));
+RowVectorPtr makeNullRowVector(memory::MemoryPool* pool, const TypePtr& rowType) {
+  auto rowTyped = asRowType(rowType);
+  std::vector<VectorPtr> children;
+  children.reserve(rowTyped->size());
+  for (int i = 0; i < rowTyped->size(); i++) {
+    children.push_back(BaseVector::createNullConstant(rowTyped->childAt(i), 1, pool));
+  }
   BufferPtr nulls = allocateNulls(1, pool, bits::kNull);
-  FLAGS_logtostderr = 1;
-  LOG(ERROR) << "makeNullRowVector";
-  return std::make_shared<RowVector>(pool, rowType, nulls, length, children);
+  return std::make_shared<RowVector>(pool, rowType, nulls, 1, children);
 }
 
 template <typename T>
@@ -545,8 +537,21 @@ VectorPtr SubstraitVeloxExprConverter::literalsToVector(
   auto child = elementAtFunc(0);
   // auto childType1 = child.literal_type_case();
   if (child.has_null()) {
-   if (SubstraitParser::parseType(child.null())->kind() == TypeKind::ARRAY) {
-    childTypeCase = ::substrait::Expression_Literal::LiteralTypeCase::kList;
+    auto nullType = SubstraitParser::parseType(child.null());
+    if (nullType) {
+      switch (nullType->kind()) {
+        case TypeKind::ARRAY:
+          childTypeCase = ::substrait::Expression_Literal::LiteralTypeCase::kList;
+          break;
+        case TypeKind::ROW:
+          childTypeCase = ::substrait::Expression_Literal::LiteralTypeCase::kStruct;
+          break;
+        case TypeKind::MAP:
+          childTypeCase = ::substrait::Expression_Literal::LiteralTypeCase::kMap;
+          break;
+        default:
+          break;
+      }
     }
   }
   //todo: switch null's subtype
@@ -623,16 +628,19 @@ VectorPtr SubstraitVeloxExprConverter::literalsToVector(
       return mapVector;
     }
     case ::substrait::Expression_Literal::LiteralTypeCase::kStruct: {
-    LOG(ERROR) << "DEBUG kStruct";
       RowVectorPtr rowVector;
       for (int i = 0; i < childSize; i++) {
         auto element = elementAtFunc(i);
-        RowVectorPtr grandVector = literalsToRowVector(element);
+        RowVectorPtr grandVector;
+        if (element.literal_type_case() == ::substrait::Expression_Literal::LiteralTypeCase::kNull) {
+          auto veloxType = SubstraitParser::parseType(element.null());
+          grandVector = makeNullRowVector(pool_, veloxType);
+        } else {
+          grandVector = literalsToRowVector(element);
+        }
         if (!rowVector) {
-            LOG(ERROR) << "DEBUG kStruct !rowVector false";
           rowVector = grandVector;
         } else {
-         LOG(ERROR) << "DEBUG kStruct rowVector true";
           rowVector->append(grandVector.get());
         }
       }
@@ -642,15 +650,10 @@ VectorPtr SubstraitVeloxExprConverter::literalsToVector(
       // if null, get null type instead of next element type
       auto veloxType = getScalarType(elementAtFunc(0));
       // if veloxType is scalar type
-      if (veloxType->isPrimitiveType()) {
+      if (veloxType && veloxType->isPrimitiveType()) {
         auto kind = veloxType->kind();
-
-        LOG(ERROR) << "getScalarType" << kind;
         return VELOX_DYNAMIC_SCALAR_TYPE_DISPATCH(
             constructFlatVector, kind, elementAtFunc, childSize, veloxType, pool_);
-      } else {
-        auto kind = veloxType->kind();
-        LOG(ERROR) << "getScalarType not isPrimitiveType " << kind;
       }
       VELOX_NYI("literals not supported for type case '{}'", std::to_string(childTypeCase));
   }
@@ -671,9 +674,8 @@ RowVectorPtr SubstraitVeloxExprConverter::literalsToRowVector(const ::substrait:
     if (!is_null) {
         return makeEmptyRowVector(pool_);
     } else {
-        LOG(ERROR) << "return makeNullRowVector";
-        return makeNullRowVector(pool_);
-        //return makeEmptyRowVector(pool_);
+        auto veloxType = SubstraitParser::parseType(structLiteral.null());
+        return makeNullRowVector(pool_, veloxType);
     }
   }
   std::vector<VectorPtr> vectors;
