@@ -303,10 +303,10 @@ function build_velox_backend {
   build_gluten_cpp
 }
 
-function get_velox {
-  cd $GLUTEN_DIR/ep/build-velox/src
-  ./get-velox.sh $VELOX_PARAMETER
-}
+#(
+#  cd $GLUTEN_DIR/ep/build-velox/src
+#  ./get_velox.sh $VELOX_PARAMETER
+#)
 
 function setup_dependencies {
   DEPENDENCY_DIR=${DEPENDENCY_DIR:-$CURRENT_DIR/../ep/_ep}

@@ -335,6 +335,8 @@ target_link_libraries(velox ${GLUTEN_VELOX_LINK_SCOPE} facebook::velox)
 
 target_link_libraries(velox PUBLIC ${GLUTEN_ROARING_LINK_LIBRARY})
 
+set(re2_DIR /home/user/gluten/ep/_ep/arrow_ep/cpp-jni/re2_ep-install/lib/cmake/re2)
+
 find_re2()
 target_link_libraries(velox PUBLIC ${RE2_LIBRARY})
 
@@ -350,7 +352,7 @@ if(STEMMER_LIB)
 else()
   import_library(
     external::stemmer
-    /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/libstemmer/src/libstemmer/libstemmer.a)
+    /home/user/gluten-deps/lib/libstemmer.a)
 endif()
 target_link_libraries(velox PUBLIC external::stemmer)
 
@@ -359,7 +361,7 @@ if(geos_FOUND AND TARGET GEOS::geos)
   add_library(external::geos ALIAS GEOS::geos)
 else()
   message(STATUS "import Velox bundled geos")
-  import_library(external::geos ${VELOX_BUILD_PATH}/lib/libgeos.a)
+  import_library(external::geos /home/user/gluten-deps/lib/libgeos.so)
 endif()
 target_link_libraries(velox PUBLIC external::geos)
 
@@ -460,7 +462,7 @@ if(simdjson_FOUND AND TARGET simdjson::simdjson)
   target_link_libraries(velox PUBLIC simdjson::simdjson)
 else()
   import_library(external::simdjson
-                 /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/simdjson-build/libsimdjson.a)
+                 /home/user/gluten-deps/lib/libsimdjson.a)
   target_link_libraries(velox PUBLIC external::simdjson)
 endif()
 

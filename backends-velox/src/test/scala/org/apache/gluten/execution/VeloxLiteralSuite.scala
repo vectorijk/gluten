@@ -128,6 +128,10 @@ class VeloxLiteralSuite extends VeloxWholeStageTransformerSuite {
     validateOffloadResult("SELECT array( null, 2, 3.0)")
     validateOffloadResult("SELECT array(1, 0, null, 2, 3)")
     validateOffloadResult("select array(null, array(null, array(1,2), array(2)), null)")
+    validateOffloadResult("select array(null, array(1, 2))")
+    validateOffloadResult("select array(null, array(null, 1, 2))")
+    validateOffloadResult("select array(null, array(1, 2, null), null)")
+    validateOffloadResult("select array(null, array(null, array(1, 2), null, array(1)))")
   }
 
   test("Scalar Type Literal") {
@@ -146,25 +150,23 @@ class VeloxLiteralSuite extends VeloxWholeStageTransformerSuite {
 
   test("debug") {
 //    validateOffloadResult("select CAST(null as struct<u:integer,v:string>)")
-    validateOffloadResult("SELECT array(struct(1, 'a'), null, struct(1, 'a'))")
-//    validateOffloadResult("select array(struct(1, 'a'),
-    //    CAST(null AS struct<col1:integer,col2:string>))")
+    validateOffloadResult("SELECT array(struct(1, 'a'), null, struct(1, 'a'))")  // failed
+//    validateOffloadResult("select array(struct(1, 'a'), CAST(null AS struct<col1:integer,col2:string>))") // failed
 
-//    validateOffloadResult("SELECT struct(cast(null as struct<a: string>))")
-//    validateOffloadResult("select array(null, array(\'str\', \'a\'))")
+//    validateOffloadResult("SELECT struct(cast(null as struct<a: string>))") // failed
+    validateOffloadResult("select array(null, array(\'str\', \'a\'))")
   }
 
   test("debug2") {
 
     validateOffloadResult("select array(null)") // failed
-    //    validateOffloadResult("select array(null, array(1, 2))")
-    //    validateOffloadResult("select array(null, array(null, 1, 2))")
-    //    validateOffloadResult("select array(null, array(1, 2, null), null)")
-    //    validateOffloadResult("select array(null, array(null, array(1, 2), null, array(1)))")
+
+
   }
 
   test("Literal Fallback") {
 //    validateFallbackResult("SELECT struct(cast(null as struct<a: string>))")   // failed
-    validateFallbackResult("SELECT array(struct(1, 'a'), null)")
+//    validateFallbackResult("SELECT array(struct(1, 'a'), null)")
+    validateFallbackResult("SELECT array(null)")
   }
 }
