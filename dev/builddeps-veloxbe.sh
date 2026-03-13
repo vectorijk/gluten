@@ -251,15 +251,17 @@ function build_gluten_cpp {
     -DENABLE_HDFS=$ENABLE_HDFS \
     -DENABLE_ABFS=$ENABLE_ABFS \
     -DENABLE_GPU=$ENABLE_GPU \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    -DENABLE_ENHANCED_FEATURES=$ENABLE_ENHANCED_FEATURES"
+    -DENABLE_ENHANCED_FEATURES=$ENABLE_ENHANCED_FEATURES \
+    -DCMAKE_PREFIX_PATH=/home/user/gluten-deps/include/ \
+    -Dglog_DIR=/your/path/to/glog_ep/install/lib/cmake/glog \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
 
   if [ $OS == 'Darwin' ]; then
     GLUTEN_CMAKE_OPTIONS+=" -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX"
   fi
 
-  cmake -G Ninja $GLUTEN_CMAKE_OPTIONS ..
-  ninja -j $NUM_THREADS
+  cmake $GLUTEN_CMAKE_OPTIONS ..
+  make -j 8
 }
 
 function build_velox_backend {
@@ -270,10 +272,10 @@ function build_velox_backend {
   build_gluten_cpp
 }
 
-function get_velox {
-  cd $GLUTEN_DIR/ep/build-velox/src
-  ./get-velox.sh $VELOX_PARAMETER
-}
+#(
+#  cd $GLUTEN_DIR/ep/build-velox/src
+#  ./get_velox.sh $VELOX_PARAMETER
+#)
 
 function setup_dependencies {
   DEPENDENCY_DIR=${DEPENDENCY_DIR:-$CURRENT_DIR/../ep/_ep}
@@ -282,28 +284,31 @@ function setup_dependencies {
   source $GLUTEN_DIR/dev/build-helper-functions.sh
   source ${VELOX_HOME}/scripts/setup-common.sh
 
-  echo "Start to install dependencies"
-  pushd $VELOX_HOME
-  if [ $OS == 'Linux' ]; then
-    setup_linux
-  elif [ $OS == 'Darwin' ]; then
-    setup_macos
-  else
-    echo "Unsupported kernel: $OS"
-    exit 1
-  fi
-  if [ $ENABLE_S3 == "ON" ]; then
-    install_aws_deps
-  fi
-  if [ $ENABLE_GCS == "ON" ]; then
-    install_gcs_sdk_cpp
-  fi
-  if [ $ENABLE_ABFS == "ON" ]; then
-    export AZURE_SDK_DISABLE_AUTO_VCPKG=ON
-    install_azure_storage_sdk_cpp
-  fi
-  popd
-}
+#source $GLUTEN_DIR/dev/build_helper_functions.sh
+#source ${VELOX_HOME}/scripts/setup-common.sh
+#if [ -z "${GLUTEN_VCPKG_ENABLED:-}" ] && [ $RUN_SETUP_SCRIPT == "ON" ]; then
+#  echo "Start to install dependencies"
+#  pushd $VELOX_HOME
+#  if [ $OS == 'Linux' ]; then
+#    setup_linux
+#  elif [ $OS == 'Darwin' ]; then
+#    setup_macos
+#  else
+#    echo "Unsupported kernel: $OS"
+#    exit 1
+#  fi
+#  if [ $ENABLE_S3 == "ON" ]; then
+#    install_aws_deps
+#  fi
+#  if [ $ENABLE_GCS == "ON" ]; then
+#    install_gcs-sdk-cpp
+#  fi
+#  if [ $ENABLE_ABFS == "ON" ]; then
+#    export AZURE_SDK_DISABLE_AUTO_VCPKG=ON
+#    install_azure-storage-sdk-cpp
+#  fi
+#  popd
+#fi
 
 function setup_dependencies_arrow {
   DEPENDENCY_DIR=${DEPENDENCY_DIR:-$CURRENT_DIR/../ep/_ep}

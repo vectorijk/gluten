@@ -26,9 +26,8 @@ BUILD_TYPE=Release
 INSTALL_PREFIX=${INSTALL_PREFIX:-"/usr/local"}
 
 function prepare_arrow_build() {
-  mkdir -p ${ARROW_PREFIX}/../ && pushd ${ARROW_PREFIX}/../ && ${SUDO} rm -rf arrow_ep/
+  mkdir -p ${ARROW_PREFIX}/../ && pushd ${ARROW_PREFIX}/../ && sudo rm -rf arrow_ep/
   wget_and_untar https://github.com/apache/arrow/archive/refs/tags/apache-arrow-${VELOX_ARROW_BUILD_VERSION}.tar.gz arrow_ep
-  #wget_and_untar https://archive.apache.org/dist/arrow/arrow-${VELOX_ARROW_BUILD_VERSION}/apache-arrow-${VELOX_ARROW_BUILD_VERSION}.tar.gz arrow_ep
   cd arrow_ep
   patch -p1 < $CURRENT_DIR/../ep/build-velox/src/modify_arrow.patch
   patch -p1 < $CURRENT_DIR/../ep/build-velox/src/modify_arrow_dataset_scan_option.patch
@@ -56,15 +55,15 @@ function build_arrow_cpp() {
        -DARROW_DEPENDENCY_SOURCE=BUNDLED \
        -DARROW_WITH_THRIFT=ON \
        -DARROW_WITH_LZ4=ON \
-       -DARROW_WITH_SNAPPY=ON \
-       -DARROW_WITH_ZLIB=${ARROW_WITH_ZLIB} \
+       -DARROW_WITH_SNAPPY=OFF \
+       -DARROW_WITH_ZLIB=ON \
        -DARROW_WITH_ZSTD=ON \
        -DARROW_JEMALLOC=OFF \
        -DARROW_SIMD_LEVEL=NONE \
        -DARROW_RUNTIME_SIMD_LEVEL=NONE \
        -DARROW_WITH_UTF8PROC=OFF \
-       -DARROW_TESTING=ON \
-       -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
+       -DARROW_TESTING=OFF \
+       -DCMAKE_INSTALL_PREFIX=/home/user/gluten-deps/ \
        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
        -DARROW_BUILD_SHARED=OFF \
        -DARROW_BUILD_STATIC=ON \
@@ -72,7 +71,7 @@ function build_arrow_cpp() {
 
  # Install thrift.
  cd _build/thrift_ep-prefix/src/thrift_ep-build
- ${SUDO} cmake --install ./ --prefix "${INSTALL_PREFIX}"/
+ sudo cmake --install ./ --prefix /home/user/gluten-deps/
  popd
 }
 

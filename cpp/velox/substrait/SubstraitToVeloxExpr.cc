@@ -486,46 +486,26 @@ VectorPtr SubstraitVeloxExprConverter::literalsToVector(
       return constructFlatVector<TypeKind::BIGINT>(elementAtFunc, childSize, INTERVAL_DAY_TIME(), pool_);
     // Handle EmptyList and List together since the children could be either case.
     case ::substrait::Expression_Literal::LiteralTypeCase::kEmptyList:
-    case ::substrait::Expression_Literal::LiteralTypeCase::kList: {
-      LOG(ERROR) << "Literal::LiteralTypeCase::kList";
-      ArrayVectorPtr elements;
-      for (int i = 0; i < childSize; i++) {
+        case ::substrait::Expression_Literal::LiteralTypeCase::kList: {
+      LOG(ERROR) << "1 Literal::LiteralTypeCase::kList";
+      // Only handle struct/null for now
+      TypePtr elementType = ROW({"col_0", "col_1"}, {INTEGER(), VARCHAR()}); // TODO: generalize
+      auto childVector = BaseVector::create(elementType, childSize, pool_);
+      BufferPtr nulls = allocateNulls(childSize, pool_, 0);
+      for (int i = 0; i < childSize; ++i) {
         auto child = elementAtFunc(i);
-        auto childType = child.literal_type_case();
-        ArrayVectorPtr grandVector;
-
-        if (childType == ::substrait::Expression_Literal::LiteralTypeCase::kEmptyList) {
-          // LOG(ERROR) << "debug 1 literalsToVector: kEmptyList 454--" << static_cast<int>(child.empty_list().type().kind_case());
-          auto elementType = SubstraitParser::parseType(child.empty_list().type());
-          grandVector = makeEmptyArrayVector(pool_, elementType);
-        }
-        else if (childType == ::substrait::Expression_Literal::LiteralTypeCase::kNull) {
-          FLAGS_logtostderr = 1;
-          // LOG(ERROR) << "debug 1 literalsToVector: kNull" << childType;
-          //LOG(ERROR) << "debug 1 literalsToVector: kNull 459-- value size" << static_cast<int>(child.literal_type_case());
-          auto veloxType = SubstraitParser::parseType(child.null());
-          //TypeKind kind = veloxType->kind();
-          ////auto grandchild = child.list().values(0);
-//
-          //auto grandChildType = getScalarType(child);
-          ////auto grandchildType = grandchild.literal_type_case();
-          //// auto grandveloxType = SubstraitParser::parseType(grandchildType->kind());
-          //// // kind.
-          //LOG(ERROR) << "literalsToVector: 469-> " << kind << "###$$$" << grandChildType->kind();
-          //// todo: use grandchild type
-          grandVector = makeNullArrayVector(pool_, veloxType, 1);
-        }
-        else {
-          LOG(ERROR) << "debug 1 literalsToVector: else" << childType;
-          grandVector = literalsToArrayVector(child);
-        }
-        if (!elements) {
-          elements = grandVector;
+        if (child.has_null()) {
+          childVector->setNull(i, true);
+          bits::setNull(nulls->asMutable<uint64_t>(), i);
         } else {
-          elements->append(grandVector.get());
+          // TODO: fill struct fields from child
         }
       }
-      return elements;
+      BufferPtr offsets = allocateOffsets(1, pool_);
+      BufferPtr sizes = allocateOffsets(1, pool_);
+      offsets->asMutable<vector_size_t>()[0] = 0;
+      sizes->asMutable<vector_size_t>()[0] = childSize;
+      return std::make_shared<ArrayVector>(pool_, ARRAY(elementType), nulls, 1, offsets, sizes, childVector);
     }
     // Handle EmptyMap and Map together since the children could be either case.
     case ::substrait::Expression_Literal::LiteralTypeCase::kEmptyMap:
@@ -590,11 +570,11 @@ RowVectorPtr SubstraitVeloxExprConverter::literalsToRowVector(const ::substrait:
   FLAGS_logtostderr = 1;
 
   auto numFields = structLiteral.struct_().fields().size();
-  LOG(ERROR) << "DEBUG literalsToRowVector " << numFields;
+  LOG(ERROR) << "line 590 here DEBUG literalsToRowVector " << numFields;
   if (numFields == 0) {
 
     auto is_null = structLiteral.literal_type_case() == ::substrait::Expression_Literal::LiteralTypeCase::kNull;
-    LOG(ERROR) << "DEBUG literalsToRowVector makeEmptyRowVector" << numFields << " is Null: " << is_null;
+    LOG(ERROR) << "DEBUG literalsToRowVector makeEmptyRowVector" << numFields << " is Null boolean: " << std::boolalpha << is_null;
     if (!is_null) {
         return makeEmptyRowVector(pool_);
     } else {
@@ -704,7 +684,7 @@ core::TypedExprPtr SubstraitVeloxExprConverter::toVeloxExpr(
     const RowTypePtr& inputType) {
     FLAGS_logtostderr = 1;
   auto typeCase = substraitExpr.rex_type_case();
-  LOG(ERROR) << "HERE " << typeCase;
+  LOG(ERROR) << "HERE typeCase for debug " << typeCase;
   switch (typeCase) {
     case ::substrait::Expression::RexTypeCase::kLiteral:
       return toVeloxExpr(substraitExpr.literal());
