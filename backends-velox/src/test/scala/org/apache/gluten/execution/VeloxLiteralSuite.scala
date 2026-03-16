@@ -118,8 +118,8 @@ class VeloxLiteralSuite extends VeloxWholeStageTransformerSuite {
     validateOffloadResult("SELECT struct(cast(null as decimal))")
     validateOffloadResult("SELECT map('b', 'a', 'e', null)")
     validateOffloadResult("SELECT array(cast(null as int))")
-//    validateOffloadResult("SELECT map(1, null)") // failed
-//    validateOffloadResult("SELECT array(null)") // failed
+    validateOffloadResult("SELECT map(1, null)")
+    validateOffloadResult("SELECT array(null)")
 
     validateOffloadResult("SELECT array(array(1,2), null, array(1), null)")
     validateOffloadResult("SELECT array(array(1.0,2), null, array(1), null)")
@@ -149,24 +149,24 @@ class VeloxLiteralSuite extends VeloxWholeStageTransformerSuite {
   }
 
   test("debug") {
-//    validateOffloadResult("select CAST(null as struct<u:integer,v:string>)")
-    validateOffloadResult("SELECT array(struct(1, 'a'), null, struct(1, 'a'))")  // failed
-//    validateOffloadResult("select array(struct(1, 'a'), CAST(null AS struct<col1:integer,col2:string>))") // failed
+    validateOffloadResult("select CAST(null as struct<u:integer,v:string>)")
+    validateOffloadResult("SELECT array(struct(1, 'a'), null, struct(1, 'a'))") // failed
+    validateOffloadResult(
+      "select array(struct(1, 'a'), " +
+        "CAST(null AS struct<col1:integer,col2:string>))"
+    ) // failed
 
-//    validateOffloadResult("SELECT struct(cast(null as struct<a: string>))") // failed
+    validateOffloadResult("SELECT struct(cast(null as struct<a: string>))") // failed
     validateOffloadResult("select array(null, array(\'str\', \'a\'))")
   }
 
   test("debug2") {
 
-    validateOffloadResult("select array(null)") // failed
-
+    validateOffloadResult("select array(null)")
 
   }
 
   test("Literal Fallback") {
-//    validateFallbackResult("SELECT struct(cast(null as struct<a: string>))")   // failed
-//    validateFallbackResult("SELECT array(struct(1, 'a'), null)")
-    validateFallbackResult("SELECT array(null)")
+//    validateFallbackResult("SELECT array(null)")
   }
 }

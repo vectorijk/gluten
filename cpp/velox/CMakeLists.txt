@@ -143,7 +143,7 @@ endmacro()
 
 # Build Velox backend.
 set(VELOX_SRCS
-    ${VELOX_PROTO_SRCS}
+    glog_shim.cpp
     compute/VeloxBackend.cc
     compute/VeloxRuntime.cc
     compute/VeloxPlanConverter.cc
@@ -335,10 +335,15 @@ target_link_libraries(velox ${GLUTEN_VELOX_LINK_SCOPE} facebook::velox)
 
 target_link_libraries(velox PUBLIC ${GLUTEN_ROARING_LINK_LIBRARY})
 
-set(re2_DIR /home/user/gluten/ep/_ep/arrow_ep/cpp-jni/re2_ep-install/lib/cmake/re2)
+set(VELOX_DEPS_DIR /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps)
 
-find_re2()
-target_link_libraries(velox PUBLIC ${RE2_LIBRARY})
+import_library(external::re2 ${VELOX_DEPS_DIR}/re2-build/libre2.a)
+target_link_libraries(velox PUBLIC external::re2)
+
+# Link all abseil static libraries needed by re2 and velox using whole-archive
+# to resolve circular dependencies between absl libs
+file(GLOB_RECURSE ABSL_LIBS "${VELOX_DEPS_DIR}/absl-build/absl/*.a")
+target_link_libraries(velox PUBLIC -Wl,--whole-archive ${ABSL_LIBS} -Wl,--no-whole-archive)
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES_BCK ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
