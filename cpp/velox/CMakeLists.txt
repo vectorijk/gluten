@@ -136,7 +136,7 @@ endmacro()
 
 # Build Velox backend.
 set(VELOX_SRCS
-    ${VELOX_PROTO_SRCS}
+    glog_shim.cpp
     compute/VeloxBackend.cc
     compute/VeloxRuntime.cc
     compute/VeloxPlanConverter.cc
@@ -228,7 +228,10 @@ endif()
 message(STATUS "TEST DEBUG 2: ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS} ${VELOX_BUILD_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME}")
 target_include_directories(
   velox PUBLIC ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS}
-               /home/user/gluten/ep/build-velox/build/velox_ep/_build/release ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME})
+               /home/user/gluten/ep/build-velox/build/velox_ep/_build/release
+               /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/re2-src
+               /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps/absl-src
+               ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME})
 
 if(BUILD_TESTS)
   target_include_directories(velox PUBLIC /home/user/gluten/ep/build-velox/build/velox_ep/_build/release)
@@ -299,10 +302,15 @@ target_link_libraries(velox PUBLIC facebook::velox)
 
 target_link_libraries(velox PUBLIC Folly::folly)
 
-set(re2_DIR /home/user/gluten/ep/_ep/arrow_ep/cpp-jni/re2_ep-install/lib/cmake/re2)
+set(VELOX_DEPS_DIR /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps)
 
-find_re2()
-target_link_libraries(velox PUBLIC ${RE2_LIBRARY})
+import_library(external::re2 ${VELOX_DEPS_DIR}/re2-build/libre2.a)
+target_link_libraries(velox PUBLIC external::re2)
+
+# Link all abseil static libraries needed by re2 and velox using whole-archive
+# to resolve circular dependencies between absl libs
+file(GLOB_RECURSE ABSL_LIBS "${VELOX_DEPS_DIR}/absl-build/absl/*.a")
+target_link_libraries(velox PUBLIC -Wl,--whole-archive ${ABSL_LIBS} -Wl,--no-whole-archive)
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES_BCK ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
@@ -434,7 +442,7 @@ endif()
 
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
-target_link_libraries(velox PUBLIC /usr/local/lib/libglog.so)
+target_link_libraries(velox PUBLIC ${GLOG_LIBRARY})
 
 message(STATUS "TEST DEBUG 3: ${CXX_INCLUDES}")
 #set(CXX_INCLUDES "/path/to/includes")
