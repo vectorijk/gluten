@@ -55,14 +55,10 @@ else()
   message(FATAL_ERROR "Unsupported processor type: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
-message(STATUS "Before Set VELOX_HOME to ${VELOX_HOME}")
 if(NOT DEFINED VELOX_HOME)
   set(VELOX_HOME ${GLUTEN_HOME}/ep/build-velox/build/velox_ep)
   message(STATUS "Set VELOX_HOME to ${VELOX_HOME}")
 endif()
-
-set(VELOX_HOME /home/user/gluten/ep/build-velox/build/velox_ep)
-message(STATUS "Manual Set VELOX_HOME to ${VELOX_HOME}")
 
 message("Velox module final CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 
@@ -140,9 +136,26 @@ macro(find_azure)
   find_package(azure-identity-cpp CONFIG REQUIRED)
 endmacro()
 
+# Set up Proto
+set(PROTO_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto")
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto)
+
+# List Gluten Proto compiled files
+file(GLOB VELOX_PROTO_FILES ${VELOX_PROTO_SRC_DIR}/*.proto)
+foreach(PROTO ${VELOX_PROTO_FILES})
+  file(RELATIVE_PATH REL_PROTO ${VELOX_PROTO_SRC_DIR} ${PROTO})
+  string(REGEX REPLACE "\\.proto" "" PROTO_NAME ${REL_PROTO})
+  list(APPEND VELOX_PROTO_SRCS "${PROTO_OUTPUT_DIR}/${PROTO_NAME}.pb.cc")
+  list(APPEND VELOX_PROTO_HDRS "${PROTO_OUTPUT_DIR}/${PROTO_NAME}.pb.h")
+endforeach()
+set(VELOX_PROTO_OUTPUT_FILES ${VELOX_PROTO_HDRS} ${VELOX_PROTO_SRCS})
+set_source_files_properties(${VELOX_PROTO_OUTPUT_FILES} PROPERTIES GENERATED
+                                                                   TRUE)
+get_filename_component(VELOX_PROTO_DIR ${VELOX_PROTO_SRC_DIR}/ DIRECTORY)
 
 # Build Velox backend.
 set(VELOX_SRCS
+    ${VELOX_PROTO_SRCS}
     glog_shim.cpp
     compute/VeloxBackend.cc
     compute/VeloxRuntime.cc
@@ -259,7 +272,23 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
                       "LINKER:-force_load,${VELOX_BUILD_PATH}/lib/libvelox.a")
 endif()
 
-message(STATUS "TEST DEBUG 2: ${CMAKE_SYSTEM_INCLUDE_PATH} ${JNI_INCLUDE_DIRS} ${VELOX_BUILD_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${VELOX_HOME}")
+find_protobuf()
+message(STATUS "Found Protobuf: ${PROTOBUF_LIBRARY}")
+
+add_custom_command(
+  OUTPUT ${VELOX_PROTO_OUTPUT_FILES}
+  COMMAND ${PROTOC_BIN} --proto_path ${VELOX_PROTO_SRC_DIR}/ --cpp_out
+          ${PROTO_OUTPUT_DIR} ${VELOX_PROTO_FILES}
+  DEPENDS ${VELOX_PROTO_DIR}
+  COMMENT "Running Gluten Velox PROTO compiler"
+  VERBATIM)
+
+add_custom_target(velox_jni_proto ALL DEPENDS ${SUBSTRAIT_PROTO_OUTPUT_FILES}
+                                              ${VELOX_PROTO_OUTPUT_FILES})
+add_dependencies(velox_jni_proto protobuf::libprotobuf)
+
+add_dependencies(velox velox_jni_proto)
+
 target_include_directories(
   velox
   PUBLIC ${CMAKE_SYSTEM_INCLUDE_PATH}
@@ -335,14 +364,27 @@ target_link_libraries(velox ${GLUTEN_VELOX_LINK_SCOPE} facebook::velox)
 
 target_link_libraries(velox PUBLIC ${GLUTEN_ROARING_LINK_LIBRARY})
 
-set(VELOX_DEPS_DIR /home/user/gluten/ep/build-velox/build/velox_ep/_build/release/_deps)
+set(VELOX_DEPS_DIR ${VELOX_BUILD_PATH}/_deps)
 
-import_library(external::re2 ${VELOX_DEPS_DIR}/re2-build/libre2.a)
-target_link_libraries(velox PUBLIC external::re2)
+if(EXISTS ${VELOX_DEPS_DIR}/re2-build/libre2.a)
+  import_library(external::re2 ${VELOX_DEPS_DIR}/re2-build/libre2.a)
+  target_link_libraries(velox PUBLIC external::re2)
+else()
+  # Velox may have resolved re2 as a SYSTEM dependency instead of building it
+  # bundled under _deps, in which case there is no re2-build directory.
+  find_re2()
+  target_link_libraries(velox PUBLIC ${RE2_LIBRARY})
+endif()
 
 # Link all abseil static libraries needed by re2 and velox using whole-archive
 # to resolve circular dependencies between absl libs
 file(GLOB_RECURSE ABSL_LIBS "${VELOX_DEPS_DIR}/absl-build/absl/*.a")
+if(NOT ABSL_LIBS)
+  # Newer Velox builds abseil-cpp via its own deps-download staging area
+  # instead of CMake FetchContent's _deps, so the bundled libraries live
+  # there instead.
+  file(GLOB_RECURSE ABSL_LIBS "${VELOX_HOME}/deps-download/abseil-cpp/_build/absl/*.a")
+endif()
 target_link_libraries(velox PUBLIC -Wl,--whole-archive ${ABSL_LIBS} -Wl,--no-whole-archive)
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES_BCK ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -357,7 +399,7 @@ if(STEMMER_LIB)
 else()
   import_library(
     external::stemmer
-    /home/user/gluten-deps/lib/libstemmer.a)
+    /usr/local/lib/libstemmer.a)
 endif()
 target_link_libraries(velox PUBLIC external::stemmer)
 
@@ -366,7 +408,7 @@ if(geos_FOUND AND TARGET GEOS::geos)
   add_library(external::geos ALIAS GEOS::geos)
 else()
   message(STATUS "import Velox bundled geos")
-  import_library(external::geos /home/user/gluten-deps/lib/libgeos.so)
+  import_library(external::geos /usr/local/lib/libgeos.so)
 endif()
 target_link_libraries(velox PUBLIC external::geos)
 
@@ -386,11 +428,14 @@ target_link_libraries(velox PUBLIC external::veloxthrift)
 # `-DCMAKE_PREFIX_PATH="${folly lib path}" to cmake arguments. It is also
 # applicable to other dependencies.
 find_package(Folly REQUIRED CONFIG)
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND TARGET gflags_shared)
+if(TARGET gflags_shared)
   # Folly's exported interface references the static gflags target while glog
   # links the shared gflags library. Loading both copies into one process makes
-  # gflags register its built-in flags twice and abort test binaries. Point
-  # folly's interface at the shared gflags target instead.
+  # gflags register its built-in flags twice and abort test binaries on macOS.
+  # On Linux, the system's static gflags archive is also not built with -fPIC,
+  # so linking it into Gluten's shared "velox" library fails outright with
+  # "relocation ... can not be used when making a shared object". Point
+  # folly's interface at the shared gflags target instead on every platform.
   foreach(FOLLY_TARGET Folly::folly Folly::folly_deps)
     if(TARGET ${FOLLY_TARGET})
       get_target_property(FOLLY_LINK_LIBS ${FOLLY_TARGET}
@@ -467,7 +512,7 @@ if(simdjson_FOUND AND TARGET simdjson::simdjson)
   target_link_libraries(velox PUBLIC simdjson::simdjson)
 else()
   import_library(external::simdjson
-                 /home/user/gluten-deps/lib/libsimdjson.a)
+                 /usr/local/lib/libsimdjson.a)
   target_link_libraries(velox PUBLIC external::simdjson)
 endif()
 

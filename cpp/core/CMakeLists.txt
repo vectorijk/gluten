@@ -22,15 +22,9 @@ include(FindPkgConfig)
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 
-set(Protobuf_LIBRARIES "/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/lib/libprotobuf.a")
-set(Protobuf_PROTOC_EXECUTABLE="/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/bin/protoc")
-set(Protobuf_PROTOC_LIBRARY="/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/lib/libprotoc.a")
-
 message("Core module final CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 
 set(BOOST_MIN_VERSION "1.42.0")
-
-set(Boost_INCLUDE_DIR /home/user/gluten-deps/include/)
 
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -56,16 +50,6 @@ if(CCACHE_FOUND)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 
-#set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-#set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-#set(Protobuf_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-#set(Protobuf_LIBRARIES "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotobuf.a")
-#set(Protobuf_PROTOC_EXECUTABLE="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/protoc")
-#set(Protobuf_PROTOC_LIBRARY="/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-build/libprotoc.a")
-
-set(Protobuf_LIBRARIES "/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/lib/libprotobuf.a")
-set(Protobuf_PROTOC_EXECUTABLE="/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/bin/protoc")
-set(Protobuf_PROTOC_LIBRARY="/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/lib/libprotoc.a")
 
 macro(find_protobuf)
   set(CMAKE_FIND_LIBRARY_SUFFIXES_BCK ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -236,31 +220,13 @@ if(ENABLE_IAA)
   target_link_libraries(gluten PUBLIC qpl::qpl)
 endif()
 
-#set(Protobuf_INCLUDE_DIRS "/opt/homebrew/Cellar/protobuf@3/3.20.3/include")
-#set(Protobuf_INCLUDE_DIR "/opt/homebrew/Cellar/protobuf@3/3.20.3/include")
-#set(Protobuf_LIBRARIES "/opt/homebrew/Cellar/protobuf@3/3.20.3/libprotobuf.31.dylib")
-#message(STATUS "Protobuf Include: ${Protobuf_INCLUDE_DIRS}")
-#message(STATUS "Protobuf Libraries: ${Protobuf_LIBRARIES}")
-#message(STATUS "Protobuf Library: ${PROTOBUF_LIBRARY}")
-
-#set(Protobuf_INCLUDE_DIRS "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-#set(Protobuf_INCLUDE_DIR "/Users/jkai/projects/incubator-gluten/ep/build-velox/build/velox_ep/_build/release/_deps/protobuf-src/src")
-set(Protobuf_LIBRARIES "/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/lib/libprotobuf.a")
-set(Protobuf_PROTOC_EXECUTABLE "/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/bin/protoc")
-set(Protobuf_PROTOC_LIBRARY "/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/lib/libprotoc.a")
-
-#include_directories(${Protobuf_INCLUDE_DIR})
-#target_link_libraries(jni_proto ${Protobuf_LIBRARIES})
 find_protobuf()
 message(STATUS "Found Protobuf: ${PROTOBUF_LIBRARY}")
 message(STATUS "Found Protobuf EXECUTABLE: ${Protobuf_PROTOC_EXECUTABLE}")
 
-set(Protobuf_PROTOC_EXECUTABLE "/home/user/gluten/ep/_ep/arrow_ep/cpp-jni/protobuf_ep-install/bin/protoc")
-
 target_link_libraries(gluten LINK_PUBLIC ${PROTOBUF_LIBRARY})
 target_link_libraries(gluten
   PUBLIC
-    ${Protobuf_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${LZ4_LIBRARIES}
     ${ZSTD_LIBRARIES}

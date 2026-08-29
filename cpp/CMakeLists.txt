@@ -173,11 +173,16 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KNOWN_WARNINGS}")
 
+# Arrow's bundled arrow/c/helpers.h calls assert() without including <cassert>,
+# relying on it being pulled in transitively by an earlier header. That's not
+# guaranteed, so force it in.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cassert")
+
 # Keep same compile option with Velox.
 execute_process(
   COMMAND
     bash -c
-    "( source /home/user/gluten/ep/build-velox/build/velox_ep/scripts/setup-helper-functions.sh && echo -n $(get_cxx_flags $ENV{CPU_TARGET}))"
+    "( source ${VELOX_HOME}/scripts/setup-helper-functions.sh && echo -n $(get_cxx_flags $ENV{CPU_TARGET}))"
   OUTPUT_VARIABLE SCRIPT_CXX_FLAGS
   RESULT_VARIABLE COMMAND_STATUS)
 if(COMMAND_STATUS EQUAL "1")

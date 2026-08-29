@@ -166,7 +166,7 @@ abstract class WholeStageTransformerSuite
       result
   }
 
-  protected def compareResultsAgainstVanillaSpark(
+  override protected def compareResultsAgainstVanillaSpark(
       sql: String,
       compareResult: Boolean = true,
       customCheck: DataFrame => Unit,
@@ -184,7 +184,7 @@ abstract class WholeStageTransformerSuite
    * run a query with native engine as well as vanilla spark then compare the result set for
    * correctness check
    */
-  protected def compareDfResultsAgainstVanillaSpark(
+  override protected def compareDfResultsAgainstVanillaSpark(
       dataframe: () => DataFrame,
       compareResult: Boolean = true,
       customCheck: DataFrame => Unit,
@@ -197,7 +197,7 @@ abstract class WholeStageTransformerSuite
     }
     // By default, we will fallback complex type scan but here we should allow
     // to test support of complex type
-    spark.conf.set("spark.gluten.sql.complexType.scan.fallback.enabled", "false");
+    spark.conf.set("spark.gluten.sql.complexType.scan.fallback.enabled", "false")
     spark.conf.set("spark.gluten.sql.substrait.plan.logLevel", "ERROR")
     spark.conf.set("spark.gluten.sql.injectNativePlanStringToExplain", "true")
     val df = dataframe()
@@ -226,7 +226,7 @@ abstract class WholeStageTransformerSuite
    * @param sql
    * @return
    */
-  protected def runAndCompare(sql: String): DataFrame = {
+  override protected def runAndCompare(sql: String): DataFrame = {
     var expected: Seq[Row] = null
     withSQLConf(vanillaSparkConfs(): _*) {
       expected = spark.sql(sql).collect()
@@ -236,7 +236,7 @@ abstract class WholeStageTransformerSuite
     df
   }
 
-  protected def runQueryAndCompare(
+  override protected def runQueryAndCompare(
       sqlStr: String,
       compareResult: Boolean = true,
       noFallBack: Boolean = true,

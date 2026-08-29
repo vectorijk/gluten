@@ -618,7 +618,7 @@ object GlutenQueryTest extends Assertions {
         s"== Correct Answer - ${expected.size} ==" +:
           getRowType(expected.headOption) +:
           prepareAnswer(expected).map(_.toString()),
-        s"== Gluten Answer HERE - ${actual.size} ==" +:
+        s"== Gluten Answer - ${actual.size} ==" +:
           getRowType(actual.headOption) +:
           prepareAnswer(actual).map(_.toString())
       ).mkString("\n")}
